@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Emotiguy Creator!</title>
+    <meta content="Emoti 3D Viewer - In Browser!" property="og:title" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="cache-control" content="max-age=0" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta http-equiv="expires" content="0" />
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT" />
+    <meta http-equiv="pragma" content="no-cache" />
+    <link rel="icon" href="./favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="./style.css">
+  </head>
+
+  <body>
+
+    <div id="loadingScreen">
+        <p>Loading Emoti, this may take a while...</p>
+        <div class="spinner"></div>
+        <p id="loadref">not working? after 15 seconds? Refresh the page</p>
+      </div>
+
+    <div class="controlls">
+        <input class="slider" type="range" id="focalLengthSlider" min="0.1" max="130" value="50">FOV<br>
+        <button id="resetCameraButton">Reset Camera</button><br>
+        <label class="switch">
+          <input type="checkbox" id="disableControlsCheckbox">
+          <span class="checkslid round"></span>
+        </label>Disable camera controls <br>
+        <label class="switch">
+          <input type="checkbox" id="wireframeCheckbox">
+          <span class="checkslid round"></span>
+        </label>Wireframe Mode <br>
+        <button id="saveScreenshotButton">Render Image</button><br>
+        <label class="switch">
+          <input type="checkbox" id="Chroma" value="0" onclick="chroma()">
+          <span class="checkslid round"></span>
+        </label>Green Screen <br>
+      </div>
+
+      <div class="Props">
+        <p>Props: (please give a while to load!)</p>
+        <label class="switch">
+            <input type="checkbox" class="hotglasses">
+            <span class="checkslid round"></span>
+          </label>Wear Sunglasses <br>
+
+          <label class="switch">
+            <input type="checkbox" class="nerd">
+            <span class="checkslid round"></span>
+          </label>Nerd Glasses<br>
+
+          <label class="switch">
+            <input type="checkbox" class="halo">
+            <span class="checkslid round"></span>
+          </label>Angel Halo<br>
+
+        <label class="switch">
+            <input type="checkbox" class="goku">
+            <span class="checkslid round"></span>
+          </label>Goku Hair<br>
+
+          <label class="switch">
+            <input type="checkbox" class="tear">
+            <span class="checkslid round"></span>
+          </label>Tear<br>
+      </div>
+
+      <div class="signature"><img src="./textures/Signature.png"></div>
+
+      <div class="footer"><p>EmotiGuy model by <a href="https://www.daz3d.com/3d-universe">3D Universe</a>, Ported to Blender by <i>GoodOlePink#7535</i>,<br> Web Build by <a href="https://duckwithsunglasses.com">Liam.</a> with &#10084;</p> </div>
+
+      <!--Thanks to my friend Notfire too, you're the best-->
+
+      <!--Libraries -- too lazy to build myself-->
+    <script src="./three.min.js"></script>
+    <script src="./GLTFLoader.js"></script>
+    <script src="./OrbitControls.js"></script>
+    <script src="./RGBELoader.js"></script>
+    
+    <script>
+        setTimeout(function() {
+          document.getElementById("loadref").style.display = "block";
+        }, 15000);
+            </script>
+
+            <!--THIS MAKES THE WHOLE SCENE, STAY AWAY!!!!-->
+    <script>
+// Create the scene, camera and renderer
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.z = 15; // Adjusted position value
+const renderer = new THREE.WebGLRenderer({
+        antialias: true,
+        clearColor: 0x000000,
+        clearAlpha: 0,
+        alpha: true,
+        preserveDrawingBuffer: true 
+    });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Add event listener to window object
+window.addEventListener('resize', () => {
+  // Update renderer size
+  renderer.setSize(window.innerWidth, window.innerHeight);
+
+  // Update camera aspect ratio
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+});
+
+        hemiLight = new THREE.HemisphereLight(0xffffff, 0x00000, 1);
+        scene.add(hemiLight);
+
+        light = new THREE.SpotLight(0xffffff,.5);
+        light.position.set(0,0,50);
+        scene.add( light );
+
+// Load the GLB file and add it to the scene
+const loader = new THREE.GLTFLoader();
+loader.load(
+  './emoticent.glb',
+  (gltf) => {
+
+                    // Once the model is loaded, hide the loading screen
+                    const loadingScreen = document.getElementById('loadingScreen');
+    loadingScreen.style.opacity = 1;
+    (function fadeOut() {
+      if ((loadingScreen.style.opacity -= 0.1) < 0) {
+        loadingScreen.style.display = 'none';
+      } else {
+        requestAnimationFrame(fadeOut);
+      }
+    })();
+
+    const mesh = gltf.scene.children[0];
+        // Set material properties to make it less shiny
+        mesh.material.roughness = 0.4; // Adjust roughness value (default is 0.5)
+    mesh.material.metalness = 0; // Set metalness to 0 to remove metal reflections
+
+    scene.add(mesh);
+
+    // Get all morph targets
+    const morphTargets = mesh.morphTargetDictionary;
+
+    // Create sliders for each morph target
+    const slidersDiv = document.createElement('div');
+    slidersDiv.id = 'sliders';
+    Object.keys(morphTargets).forEach((morphTarget) => {
+      const slider = document.createElement('input');
+      slider.type = 'range';
+      slider.min = 0;
+      slider.max = 1;
+      slider.step = 0.01;
+      slider.value = mesh.morphTargetInfluences[morphTargets[morphTarget]];
+      slider.addEventListener('input', () => {
+        mesh.morphTargetInfluences[morphTargets[morphTarget]] = parseFloat(slider.value);
+      });
+      slider.classList.add('slider'); // add the 'slider' class here
+      const label = document.createElement('label');
+      label.innerText = morphTarget;
+      slidersDiv.appendChild(label);
+      slidersDiv.appendChild(slider);
+    });
+    const body = document.body;
+const firstChild = body.firstChild;
+body.insertBefore(slidersDiv, firstChild);
+  },
+  undefined,
+  function (error) {
+    console.error(error);
+  }
+);
+
+
+// Create orbit controls
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0, 0);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.enableZoom = true;
+controls.zoomSpeed = 1;
+controls.enablePan = true;
+controls.panSpeed = 0.5;
+controls.rotateSpeed = 0.5;
+
+// Add animation loop
+const animate = function () {
+  requestAnimationFrame(animate);
+
+  // Update controls
+  controls.update();
+
+  // Render scene
+  renderer.render(scene, camera);
+};
+
+// Start animation loop
+animate();
+    </script>
+
+<!--GENERAL SETTINGS BUTTONS-->
+    <script>
+// Get the slider element and reset button
+const slider = document.querySelector('#focalLengthSlider');
+const resetButton = document.querySelector('#resetCameraButton');
+const disableControlsCheckbox = document.querySelector('#disableControlsCheckbox');
+const wireframeCheckbox = document.querySelector('#wireframeCheckbox');
+
+// Get the Three.js camera object and save its original position
+const originalPosition = new THREE.Vector3(0, 0, 15);
+camera.position.copy(originalPosition);
+
+// Set the initial value of the slider to the camera's current focal length
+slider.value = camera.getFocalLength();
+
+// Add an event listener to the slider that updates the camera's focal length when it's dragged
+slider.addEventListener('input', () => {
+  camera.setFocalLength(parseFloat(slider.value));
+});
+
+// Add an event listener to the reset button that puts the camera back to its original position
+resetButton.addEventListener('click', () => {
+  camera.position.copy(originalPosition);
+  camera.lookAt(new THREE.Vector3());
+});
+
+// Add an event listener to the disable controls checkbox that disables orbit controls when checked
+disableControlsCheckbox.addEventListener('change', () => {
+  if (disableControlsCheckbox.checked) {
+    controls.enabled = false;
+  } else {
+    controls.enabled = true;
+  }
+});
+
+// Add an event listener to the wireframe checkbox that toggles wireframe mode when checked
+wireframeCheckbox.addEventListener('change', () => {
+  const model = scene.children.find(child => child.isMesh);
+  if (wireframeCheckbox.checked) {
+    model.material.wireframe = true;
+  } else {
+    model.material.wireframe = false;
+  }
+});
+
+const checkbox = document.querySelector('.hotglasses');
+
+checkbox.addEventListener('change', () => {
+  if (checkbox.checked) {
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      './glasses.glb',
+      (gltf) => {
+        const mesh = gltf.scene.children[0];
+        mesh.name = 'glasses'; // Set a name for the glasses object
+        scene.add(mesh);
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+      }
+    );
+  } else {
+    // If checkbox is unchecked, remove the glasses from the scene
+    const glasses = scene.getObjectByName('glasses');
+    if (glasses) {
+      scene.remove(glasses);
+    }
+  }
+});
+    </script>
+                <!--THIS ENABLES PROPS-->
+    <script>
+const checkbox2 = document.querySelector('.goku');
+
+checkbox2.addEventListener('change', () => {
+  if (checkbox2.checked) {
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      './goku.glb',
+      (gltf) => {
+        const mesh = gltf.scene.children[0];
+        mesh.name = 'goku'; // Set a name for the glasses object
+        scene.add(mesh);
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+      }
+    );
+  } else {
+    // If checkbox is unchecked, remove the glasses from the scene
+    const goku = scene.getObjectByName('goku');
+    if (goku) {
+      scene.remove(goku);
+    }
+  }
+});
+
+const checkbox3 = document.querySelector('.nerd');
+
+checkbox3.addEventListener('change', () => {
+  if (checkbox3.checked) {
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      './nerd.glb',
+      (gltf) => {
+        const mesh = gltf.scene.children[0];
+        mesh.name = 'nerd'; // Set a name for the glasses object
+        scene.add(mesh);
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+      }
+    );
+  } else {
+    // If checkbox is unchecked, remove the glasses from the scene
+    const nerd = scene.getObjectByName('nerd');
+    if (nerd) {
+      scene.remove(nerd);
+    }
+  }
+});
+
+const checkbox4 = document.querySelector('.halo');
+
+checkbox4.addEventListener('change', () => {
+  if (checkbox4.checked) {
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      './halo.glb',
+      (gltf) => {
+        const mesh = gltf.scene.children[0];
+        mesh.name = 'halo'; // Set a name for the glasses object
+        scene.add(mesh);
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+      }
+    );
+  } else {
+    // If checkbox is unchecked, remove the glasses from the scene
+    const halo = scene.getObjectByName('halo');
+    if (halo) {
+      scene.remove(halo);
+    }
+  }
+});
+
+const checkbox5 = document.querySelector('.tear');
+
+checkbox5.addEventListener('change', () => {
+  if (checkbox5.checked) {
+    const loader = new THREE.GLTFLoader();
+    loader.load(
+      './tear.glb',
+      (gltf) => {
+        const mesh = gltf.scene.children[0];
+        mesh.name = 'tear'; // Set a name for the glasses object
+        scene.add(mesh);
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+      }
+    );
+  } else {
+    // If checkbox is unchecked, remove the glasses from the scene
+    const tear = scene.getObjectByName('tear');
+    if (tear) {
+      scene.remove(tear);
+    }
+  }
+});
+    </script>
+
+    <script>
+// get the controls div
+const controls2 = document.querySelector(".controlls");
+
+// create hue slider
+const hueContainer = document.createElement("div");
+const hueLabel = document.createElement("label");
+hueLabel.innerHTML = "Hue: ";
+const hueSlider = document.createElement("input");
+hueSlider.type = "range";
+hueSlider.min = "0";
+hueSlider.max = "360";
+hueSlider.value = "0";
+hueSlider.className = "slider";
+hueSlider.addEventListener("input", handleSliderChange);
+
+hueContainer.appendChild(hueLabel);
+hueContainer.appendChild(hueSlider);
+
+// create saturation slider
+const saturationContainer = document.createElement("div");
+const saturationLabel = document.createElement("label");
+saturationLabel.innerHTML = "Saturation: ";
+const saturationSlider = document.createElement("input");
+saturationSlider.type = "range";
+saturationSlider.min = "0";
+saturationSlider.max = "500";
+saturationSlider.value = "100";
+saturationSlider.className = "slider";
+saturationSlider.addEventListener("input", handleSliderChange);
+
+saturationContainer.appendChild(saturationLabel);
+saturationContainer.appendChild(saturationSlider);
+
+// create brightness slider
+const brightnessContainer = document.createElement("div");
+const brightnessLabel = document.createElement("label");
+brightnessLabel.innerHTML = "Brightness: ";
+const brightnessSlider = document.createElement("input");
+brightnessSlider.type = "range";
+brightnessSlider.min = "0";
+brightnessSlider.max = "200";
+brightnessSlider.value = "100";
+brightnessSlider.className = "slider";
+brightnessSlider.addEventListener("input", handleSliderChange);
+
+brightnessContainer.appendChild(brightnessLabel);
+brightnessContainer.appendChild(brightnessSlider);
+
+// create blur slider
+const blurContainer = document.createElement("div");
+const blurLabel = document.createElement("label");
+blurLabel.innerHTML = "Blur: ";
+const blurSlider = document.createElement("input");
+blurSlider.type = "range";
+blurSlider.min = "0";
+blurSlider.max = "50";
+blurSlider.value = "0";
+blurSlider.className = "slider";
+blurSlider.addEventListener("input", handleSliderChange);
+
+blurContainer.appendChild(blurLabel);
+blurContainer.appendChild(blurSlider);
+
+// add sliders to the controls div with labels, line breaks, and containers
+controls2.appendChild(hueContainer);
+controls2.appendChild(saturationContainer);
+controls2.appendChild(brightnessContainer);
+controls2.appendChild(blurContainer);
+
+// get the canvas element
+const canvas = document.querySelector("canvas");
+
+// function to handle slider changes
+function handleSliderChange() {
+  const hue = hueSlider.value;
+  const saturation = saturationSlider.value;
+  const brightness = brightnessSlider.value;
+  const blur = blurSlider.value;
+
+  // set the canvas filter styles
+  canvas.style.filter = `hue-rotate(${hue}deg) saturate(${saturation}%) brightness(${brightness}%) blur(${blur}px)`;
+}
+    </script>
+
+    <script>
+// Get the canvas element and save screenshot button
+const canvas3 = document.getElementsByTagName('canvas')[0];
+const saveScreenshotButton = document.getElementById('saveScreenshotButton');
+
+// Add click event listener to the save screenshot button
+saveScreenshotButton.addEventListener('click', () => {
+  // Create a new canvas element to draw the filtered image
+  const filteredCanvas = document.createElement('canvas');
+  const filteredCtx = filteredCanvas.getContext('2d');
+  filteredCanvas.width = canvas3.width * 2;
+  filteredCanvas.height = canvas3.height * 2;
+  
+  // Scale the filtered canvas to 2x and draw it on the new canvas
+  filteredCtx.scale(2, 2);
+  filteredCtx.filter = window.getComputedStyle(canvas3).filter;
+  filteredCtx.drawImage(canvas3, 0, 0);
+
+  // Crop the canvas to alpha bounds
+  const croppedCanvas = cropCanvasToAlphaBounds(filteredCanvas);
+  
+  // Convert the filtered canvas to a data URL and download it as an image file
+  const dataURL = croppedCanvas.toDataURL('image/png');
+  const link = document.createElement('a');
+  link.download = 'render.png';
+  link.href = dataURL;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+});
+
+// Function to crop canvas to alpha bounds
+function cropCanvasToAlphaBounds(canvas) {
+  const context = canvas.getContext('2d');
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+  const pixels = imageData.data;
+  let minX = canvas.width;
+  let minY = canvas.height;
+  let maxX = 0;
+  let maxY = 0;
+  
+  // Find the minimum and maximum coordinates of non-transparent pixels
+  for (let y = 0; y < canvas.height; y++) {
+    for (let x = 0; x < canvas.width; x++) {
+      const alpha = pixels[(y * canvas.width + x) * 4 + 3];
+      if (alpha > 0) {
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x);
+        maxY = Math.max(maxY, y);
+      }
+    }
+  }
+  
+  // Crop the canvas to the alpha bounds
+  const width = maxX - minX + 1;
+  const height = maxY - minY + 1;
+  const croppedCanvas = document.createElement('canvas');
+  const croppedCtx = croppedCanvas.getContext('2d');
+  croppedCanvas.width = width;
+  croppedCanvas.height = height;
+  croppedCtx.drawImage(canvas, minX, minY, width, height, 0, 0, width, height);
+  
+  return croppedCanvas;
+}
+    </script>
+
+<script>
+  function chroma() {
+     var element = document.body;
+     element.classList.toggle("chroma");
+  }
+  </script>
+
+  <script>
+// Define the Konami code sequence
+const konamiCode = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+
+// Keep track of the index of the next key to be pressed
+let konamiIndex = 0;
+
+// Add an event listener to the document for keydown events
+document.addEventListener("keydown", function(event) {
+  // Check if the pressed key matches the next key in the Konami code sequence
+  if (event.key === konamiCode[konamiIndex]) {
+    // Increment the index of the next key to be pressed
+    konamiIndex++;
+    // Check if the entire Konami code sequence has been entered
+    if (konamiIndex === konamiCode.length) {
+      // Redirect the user to doom
+      window.location.href = "https://raz0red.github.io/webprboom/";
+      // Reset the index of the next key to be pressed
+      konamiIndex = 0;
+    }
+  } else {
+    // Reset the index of the next key to be pressed if the pressed key does not match the next key in the Konami code sequence
+    konamiIndex = 0;
+  }
+  // Prevent the default action of the pressed key (e.g. scrolling) if the pressed key is not F5
+  if (event.key !== "F5") {
+    event.preventDefault();
+  }
+});
+
+// Add an event listener to the document for keyup events
+document.addEventListener("keyup", function(event) {
+  // Check if the pressed key is the enter key
+  if (event.key === "Enter") {
+    // Reset the index of the next key to be pressed
+    konamiIndex = 0;
+  }
+});
+  </script>
+  </body>
+</html>

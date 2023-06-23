@@ -1,0 +1,314 @@
+/* Hide scrollbar for webkit-based browsers */
+::-webkit-scrollbar {
+    display: none;
+  }
+  
+
+body {
+    margin: 0;
+    overflow: hidden;
+  }
+
+  *{
+    cursor: url("./cursor.png"), auto;
+  }
+
+    :root {
+--polka-bg-image:
+radial-gradient(rgb(54, 58, 52) 17.2%, transparent 17.2%),
+radial-gradient(rgb(54, 58, 52) 17.2%, transparent 17.2%);
+--polka-bg-position: 0px 0px, 8px 8px;
+--polka-bg-size: 16px 16px;
+--polka-bg-color: rgb(59, 59, 59);
+}
+
+  html, body {
+    user-select: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    font-family: sans-serif;
+    background-image: 
+radial-gradient(rgb(54, 58, 52) 17.2%, transparent 17.2%),
+radial-gradient(rgb(54, 58, 52) 17.2%, transparent 17.2%);
+background-position: 0px 0px, 8px 8px;
+background-size: 16px 16px;
+background-color: rgb(59, 59, 59);
+  }
+  #renderCanvas {
+    width: 100%;
+    height: 100%;
+  }
+  .controlls{
+    background: rgb(13,13,13);
+    background: linear-gradient(0deg, rgba(13,13,13,1) 0%, rgba(36,36,36,1) 83%, rgba(17,17,17,1) 100%); 
+    width: fit-content;
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.542);
+    position: absolute;
+    margin: 10px;
+    border: solid rgba(255, 255, 255, 0.33);
+    backdrop-filter: blur(10px);
+    transform: scale(1.2);
+    transform-origin: top left;
+    color: white;
+  }
+  button:hover{
+    cursor: pointer;
+  }
+  input:hover{
+    cursor:pointer;
+  }
+  #loadingScreen {
+position: absolute;
+top: 0;
+left: 0;
+width: 100%;
+height: 100%;
+background-color: #333;
+color: #fff;
+display: flex;
+justify-content: center;
+align-items: center;
+opacity: 1;
+transition-duration: 1s;
+pointer-events: none;
+flex-direction: column;
+}
+
+.spinner {
+background-image: url("favicon.png");
+background-size: cover ;
+border-radius: 50%;
+width: 80px;
+height: 80px;
+animation: spin 1s linear infinite;
+margin-left: 12px;
+}
+
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+
+#loadref{
+display: none;
+}
+a{
+pointer-events: visibleFill !important;
+}
+
+button{
+background: rgb(23,23,23);
+background: linear-gradient(0deg, rgba(23,23,23,1) 0%, rgba(23,23,23,1) 49%, rgba(50,48,45,1) 49%, rgba(99,100,99,1) 100%); 
+border: solid rgba(255, 255, 255, 0.247);
+color: white;
+border-radius: 5px;
+}
+
+.slider {
+-webkit-appearance: none;
+height: 10px;
+background: linear-gradient(#e3e3e3, #8e908f);
+border-radius: 50000px;
+}
+
+.slider::-webkit-slider-thumb {
+-webkit-appearance: none;
+width: 25px;
+height: 25px;
+background-image: url("./slider.png");
+cursor: pointer;
+background-size: contain;
+border-radius: 50000px;
+box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.479);
+}
+
+.slider::-moz-range-thumb {
+-webkit-appearance: none;
+width: 20px;
+height: 20px;
+background-image: url("./slider.png");
+cursor: pointer;
+background-size: contain;
+border-radius: 50000px;
+box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.479);
+}
+
+.switch {
+position: relative;
+display: inline-block;
+width: 35px;
+height: 22px;
+}
+
+.switch input { 
+opacity: 0;
+width: 0;
+height: 0;
+}
+
+.checkslid {
+position: absolute;
+cursor: pointer;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background: linear-gradient(#9d9d9d,#bfbfbf);
+-webkit-transition: .4s;
+transition: .4s;
+}
+
+.checkslid:before {
+position: absolute;
+content: "";
+width: 15px;
+height: 15px;
+left: 4px;
+bottom: 4px;
+background: white;
+-webkit-transition: .4s;
+transition: .4s;
+}
+
+input:checked + .checkslid {
+background: linear-gradient(#1755d1,#4a76ce);
+}
+
+input:checked + .checkslid:before {
+-webkit-transform: translateX(12px);
+-ms-transform: translateX(12px);
+transform: translateX(12px);
+}
+
+/* Rounded sliders */
+.checkslid.round {
+border-radius: 34px;
+}
+
+.checkslid.round:before {
+border-radius: 50%;
+}
+
+.controlls > *{
+margin-bottom: 10px;
+}
+
+#sliders{
+position: absolute;
+width: 200px;
+overflow: scroll;
+height: 50%;
+background: rgb(13,13,13);
+background: linear-gradient(0deg, rgba(13,13,13,1) 0%, rgba(36,36,36,1) 83%, rgba(17,17,17,1) 100%); 
+padding: 10px;
+border-radius: 15px;
+box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.542);
+position: absolute;
+margin: 10px;
+border: solid rgba(255, 255, 255, 0.33);
+backdrop-filter: blur(10px);
+transform: scale(1.2);
+transform-origin: top left;
+color: white;
+right: 50px;
+overflow-x: hidden;
+}
+
+#sliders > *{
+margin: 10px;
+}
+
+.footer{
+bottom: 0;
+position: fixed;
+text-align: center;
+color: white;
+opacity: 40%;
+left: 50%;
+transform: translate(-50%, 0%);
+}
+
+a{
+color: white;
+}
+
+.signature{
+position: absolute;
+pointer-events: none;
+opacity: 15%;
+scale: 20%;
+bottom: 0;
+left: 0;
+transform-origin: bottom left;
+margin: 20px;
+filter: contrast(0%);
+}
+
+.Props{
+    background: rgb(13,13,13);
+    background: linear-gradient(0deg, rgba(13,13,13,1) 0%, rgba(36,36,36,1) 83%, rgba(17,17,17,1) 100%); 
+    width: fit-content;
+    padding: 10px;
+    border-radius: 15px;
+    box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.542);
+    position: absolute;
+    margin: 10px;
+    border: solid rgba(255, 255, 255, 0.33);
+    backdrop-filter: blur(10px);
+    transform: scale(1.2);
+    transform-origin: top left;
+    color: white;
+    top: 454px;
+}
+
+.Props > label{
+margin-bottom: 10px;
+}
+
+canvas{
+z-index: 0;
+position: absolute;
+}
+
+div{
+z-index: 1;
+}
+
+.chroma {
+background-color: #00ff00;
+background-image: none !important;
+color: #00ff00;
+}
+
+.textures{
+position: absolute;
+width: 200px;
+overflow: scroll;
+height: 10%;
+background: rgb(13,13,13);
+background: linear-gradient(0deg, rgba(13,13,13,1) 0%, rgba(36,36,36,1) 83%, rgba(17,17,17,1) 100%); 
+padding: 10px;
+border-radius: 15px;
+box-shadow: 0px 6px 16px rgba(0, 0, 0, 0.542);
+position: absolute;
+margin: 10px;
+border: solid rgba(255, 255, 255, 0.33);
+backdrop-filter: blur(10px);
+transform: scale(1.2);
+transform-origin: top left;
+color: white;
+right: 350px;
+overflow-x: hidden;
+}
+
+.textures > input{
+margin-top: 10px;
+}
+
+#resetCameraButton{
+    display: none !important;
+}
